@@ -1,6 +1,6 @@
 {
   "name": "news-app",
-  "homepage": "http://aliu39.github.io/news-c1-deployed",
+  "homepage": "http://aliu39.github.io/news-app-c1",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
