@@ -36,10 +36,8 @@ const Body = props => (
 
 // consideration: keep country as US or go international?
 // consider whether cors available after deploying site
-const baseUrl =
-  "http://cors-anywhere.herokuapp.com/" +
-  "http://newsapi.org/v2/top-headlines?" +
-  "country=us&category="; //to be modified by getNews()
+const proxy = "http://cors-anywhere.herokuapp.com/";
+const baseUrl = "http://newsapi.org/v2/top-headlines?" + "country=us&category="; //to be modified by getNews()
 const key = "&apiKey=f6d3a364faf54888a77e0bab46b8b66c";
 
 class App extends React.Component {
@@ -59,7 +57,7 @@ class App extends React.Component {
     // if (category !== this.state.lastCategory) {
     let h = new Headers();
     h.append("Accept", "application/json");
-
+    console.log(baseUrl);
     let req = new Request(baseUrl + category + key, {
       method: "GET",
       headers: h,
