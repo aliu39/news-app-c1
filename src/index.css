@@ -22,7 +22,8 @@ body {
     sans-serif; */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /* text-align: center; */
+  /* text-align: center;
+  position: fixed; */
 }
 
 /* #header {
@@ -98,13 +99,21 @@ button:hover {
   transform: scale(1.2);
 }
 
+button:active {
+  -webkit-transform: scale(0.9);
+  -moz-transform: scale(0.9);
+  -ms-transform: scale(0.9);
+  -o-transform: scale(0.9);
+  transform: scale(0.9);
+}
+
 button.search {
   width: 225px;
   margin: 10px auto 0; /*external spacing (between other elements) */
 }
+
 button.tab {
   width: 100px;
-  transform: translateX(-80%);
 }
 
 p {

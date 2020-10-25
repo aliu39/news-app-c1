@@ -48,47 +48,57 @@ class App extends React.Component {
     this.state = {
       articles: [], //json data
       refs: [],
-      tab: "Saved articles",
-      cached: [],
+      tab: 0,
+      cache: [],
       cachedRefs: [],
       lastCategory: ""
     };
   }
 
   getNews(category) {
-    if (category !== this.state.lastCategory) {
-      let h = new Headers();
-      h.append("Accept", "application/json");
+    // if (category !== this.state.lastCategory) {
+    let h = new Headers();
+    h.append("Accept", "application/json");
 
-      let req = new Request(baseUrl + category + key, {
-        method: "GET",
-        headers: h,
-        mode: "cors"
-      });
+    let req = new Request(baseUrl + category + key, {
+      method: "GET",
+      headers: h,
+      mode: "cors"
+    });
 
-      fetch(req)
-        .then(response => {
-          if (response.ok) {
-            return response.json();
-          } else {
-            throw new Error("faulty request response");
-          }
-        })
-        .then(jsonData => {
-          var articleData = [];
-          for (let i = 0; i < jsonData.articles.length; i++) {
-            articleData.push(jsonData.articles[i]);
-          }
-          console.log("setting lastCategory to " + category);
-          this.setState({
-            articles: articleData,
-            lastCategory: category
-          });
-        })
-        .catch(err => {
-          console.log("ERROR: ", err.message);
+    fetch(req)
+      .then(response => {
+        if (response.ok) {
+          return response.json();
+        } else {
+          throw new Error("faulty request response");
+        }
+      })
+      .then(jsonData => {
+        //first update cache
+        if (this.state.tab) {
+          this.toggleTab();
+        }
+        if (category !== this.state.lastCategory) {
+          this.updateCache();
+        }
+
+        var articleData = [];
+        var newRefs = [];
+        for (let i = 0; i < jsonData.articles.length; i++) {
+          articleData.push(jsonData.articles[i]);
+          newRefs.push(React.createRef());
+        }
+        console.log("setting lastCategory to " + category);
+        this.setState({
+          articles: articleData,
+          refs: newRefs,
+          lastCategory: category
         });
-    }
+      })
+      .catch(err => {
+        console.log("ERROR: ", err.message);
+      });
   }
 
   updateRefs = () => {
@@ -97,17 +107,33 @@ class App extends React.Component {
   };
 
   updateCache = () => {
-    for (let i = 0; i < this.state.refs.length; i++) {}
-    this.setState({});
+    console.log("cache update");
+    let newCache = [];
+    let seen = new Set();
+    for (let i = 0; i < this.state.refs.length; i++) {
+      let article = this.state.refs[i].current;
+      if (article.state.cached) {
+        newCache.push(article.state.fullData);
+        seen.add(article.state.url);
+      }
+    }
+    for (let i = 0; i < this.state.cache.length; i++) {
+      let data = this.state.cache[i];
+      if (seen.has(data.url)) {
+        console.log("deleted old save entry");
+      } else {
+        newCache.push(data);
+      }
+    }
+    return newCache;
   };
 
   toggleTab = () => {
-    let tabName =
-      this.state.tab === "Saved articles" ? "Back to search" : "Saved articles";
+    let newCache = this.state.tab ? this.state.cache : this.updateCache();
     this.setState({
-      articles: this.state.cached,
-      tab: tabName,
-      cached: this.state.articles
+      articles: newCache,
+      tab: !this.state.tab,
+      cache: this.state.articles
     });
   };
 
@@ -132,13 +158,18 @@ class App extends React.Component {
         <br />
         <div align="right">
           <button className="tab" onClick={this.toggleTab}>
-            {this.state.tab}
+            {this.state.tab ? "Return to search" : "Saved articles"}
           </button>
         </div>
         <div className="scrollable">
           <ul>
-            {this.state.articles.map(article => (
-              <Article info={article} key={article.url} tab={this.state.tab} />
+            {this.state.articles.map((article, i) => (
+              <Article
+                info={article}
+                key={article.url}
+                tab={this.state.tab}
+                ref={this.state.refs[i]}
+              />
             ))}
           </ul>
         </div>
