@@ -69,7 +69,7 @@ class App extends React.Component {
         if (response.ok) {
           return response.json();
         } else {
-          throw new Error("faulty request response");
+          throw new Error("faulty response status " + response.status);
         }
       })
       .then(jsonData => {
