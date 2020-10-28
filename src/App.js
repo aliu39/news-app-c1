@@ -60,7 +60,7 @@ class App extends React.Component {
     let h = new Headers();
     h.append("Accept", "application/json");
     console.log(baseUrl);
-    let req = new Request(baseUrl + category + key2, {
+    let req = new Request(proxy + baseUrl + category + key2, {
       method: "GET",
       headers: h,
       mode: "cors"
