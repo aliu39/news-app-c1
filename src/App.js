@@ -1,6 +1,6 @@
 import React from "react";
 import logo from "./logo.svg";
-import "./App.css";
+// import "./App.css";
 import Article from "./components/Article";
 
 class Obj extends React.Component {
@@ -37,8 +37,10 @@ const Body = props => (
 // consideration: keep country as US or go international?
 // consider whether cors available after deploying site
 const proxy = "https://cors-anywhere.herokuapp.com/";
-const baseUrl = "https://newsapi.org/v2/top-headlines?country=us&category="; //to be modified by getNews()
+//"https://newsapi.org/v2/top-headlines?country=us&category="
+const baseUrl = "https://newsapi.org/v2/everything?language=en&q="; //to be modified by getNews()
 const key = "&apiKey=f6d3a364faf54888a77e0bab46b8b66c";
+const key2 = "&apiKey=78b9d599c4f94f8fa3afb1a5458928d6";
 
 class App extends React.Component {
   constructor(props) {
@@ -58,7 +60,7 @@ class App extends React.Component {
     let h = new Headers();
     h.append("Accept", "application/json");
     console.log(baseUrl);
-    let req = new Request(proxy + baseUrl + category + key, {
+    let req = new Request(baseUrl + category + key2, {
       method: "GET",
       headers: h,
       mode: "cors"
