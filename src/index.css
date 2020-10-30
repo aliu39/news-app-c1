@@ -2,18 +2,28 @@
 @import url(https://fonts.googleapis.com/css?family=Source+Code+Pro:200,300,400,500,600,700,900);
 h1 {
   color: #17252a;
+  font-family: "Source Code Pro";
   font-weight: 600;
-  font-size: 60px;
+  font-size: 40px;
   text-transform: uppercase;
   border-top: 5px solid black;
   margin-top: 10px;
-  margin-bottom: 10px;
+  margin-bottom: 0px;
+  text-align: center;
+}
+h2 {
+  color: #17252a;
+  font-family: "Source Code Pro";
+  font-weight: 400;
+  font-size: 15px;
+  margin-top: 0px;
+  margin-bottom: 0px;
   text-align: center;
 }
 
 body {
   margin: 0; /* output margin in Article component styling */
-  background-color: #3aafa9; /* #c0c0c0*/
+  background-color: #27d9d0; /*#3aafa9;*/ /* #c0c0c0*/
   color: #17252a;
   font-family: "Source Code Pro";
   font-size: 20px;
@@ -43,20 +53,21 @@ body {
 
 .article {
   transition: 0.2s;
-  padding: 20px;
   border: 1px solid black;
-  border-radius: 5%;
+  padding: 20px;
   display: inline-block;
   width: 90vw;
+  background: white;
 }
 
 .article:hover {
   transition: 0.2s;
-  -webkit-transform: scale(1.05);
-  -moz-transform: scale(1.05);
-  -ms-transform: scale(1.05);
-  -o-transform: scale(1.05);
-  transform: scale(1.05);
+  border: 3px solid black;
+  -webkit-transform: scale(1.02);
+  -moz-transform: scale(1.02);
+  -ms-transform: scale(1.02);
+  -o-transform: scale(1.02);
+  transform: scale(1.02);
 }
 
 img {
@@ -64,12 +75,13 @@ img {
   border-radius: 10%; /* 50% on square: circle */
   float: left;
   width: 400px; /*20vw;*/
+  margin-right: 15px;
 }
 
 button {
   transition: 0.2s;
   /* padding: 20px 25px; internal spacing */
-  background-color: #2b7a78; /* #3aafa9; */
+  background-color: #2f918f; /* #3aafa9; */ /* #2b7a78; */ /* #3aafa9; */
   color: #17252a;
   font-size: 20px;
   text-align: center;
@@ -84,11 +96,6 @@ button:hover {
   color: white;
   font-weight: 200;
   border: 2px solid white;
-  -webkit-transform: scale(1.2);
-  -moz-transform: scale(1.2);
-  -ms-transform: scale(1.2);
-  -o-transform: scale(1.2);
-  transform: scale(1.2);
 }
 
 button:active {
@@ -99,13 +106,30 @@ button:active {
   transform: scale(0.9);
 }
 
-button.search {
+button.categoryBtn {
   width: 225px;
   margin: 10px auto 0; /*external spacing (between other elements) */
 }
 
 button.tab {
   width: 100px;
+}
+
+div.controlbar {
+  display: flex;
+  flex-direction: row;
+}
+div.prevnext {
+  width: 20vw;
+  text-align: center;
+}
+div.searchbar {
+  width: 60vw;
+  text-align: center;
+}
+div.tab {
+  width: 20vw;
+  text-align: center;
 }
 
 p {

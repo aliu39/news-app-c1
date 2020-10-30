@@ -1,33 +1,6 @@
 import React from "react";
-import logo from "./logo.svg";
 // import "./App.css";
 import Article from "./components/Article";
-
-class Obj extends React.Component {
-  render() {
-    return (
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <h1>{this.props.title + " " + this.props.num}</h1>
-        <h1>{JSON.stringify(this.props.myObj)}</h1>
-      </header>
-    );
-  }
-}
-
-const Body = props => (
-  <p>
-    Edit <code>src/App.js</code> and save to reload.
-    <a
-      className="App-link"
-      href="https://reactjs.org"
-      target="_blank"
-      rel="noopener noreferrer"
-    >
-      {props.text}
-    </a>
-  </p>
-);
 
 /* GET NEWS FROM API CODE */
 
@@ -36,11 +9,11 @@ const Body = props => (
 
 // consideration: keep country as US or go international?
 // consider whether cors available after deploying site
-const proxy = "https://cors-anywhere.herokuapp.com/";
-//"https://newsapi.org/v2/top-headlines?country=us&category="
-const baseUrl = "https://newsapi.org/v2/everything?language=en&q="; //to be modified by getNews()
+
+const APIKEY = "78b9d599c4f94f8fa3afb1a5458928d6";
+const PROXY = "https://cors-anywhere.herokuapp.com/";
+const PAGESIZE = 20; //standard articles per page defined by NewsAPI
 const key = "&apiKey=f6d3a364faf54888a77e0bab46b8b66c";
-const key2 = "&apiKey=78b9d599c4f94f8fa3afb1a5458928d6";
 
 class App extends React.Component {
   constructor(props) {
@@ -48,19 +21,40 @@ class App extends React.Component {
     this.state = {
       articles: [], //json data
       refs: [],
-      tab: 0,
+      tab: false, //short for "is currently on saved tab"
       cache: [],
       cachedRefs: [],
-      lastCategory: ""
+      category: "",
+      keywords: [],
+      US: true,
+      currPage: 1
     };
+    this.currPage = 1;
   }
 
-  getNews(category) {
+  composeBaseUrl = () => {
+    return (
+      PROXY +
+      "https://newsapi.org/v2/top-headlines?" +
+      "apiKey=" +
+      APIKEY +
+      (this.state.US ? "&country=us" : "") +
+      "&pageSize=" +
+      PAGESIZE +
+      "&page=" +
+      this.state.currPage +
+      "&category="
+    ); //to be added to
+  };
+
+  //takes category as direct input, since set state asynchronous
+  getNews = category => {
     // if (category !== this.state.lastCategory) {
     let h = new Headers();
     h.append("Accept", "application/json");
+    let baseUrl = this.composeBaseUrl();
     console.log(baseUrl);
-    let req = new Request(proxy + baseUrl + category + key2, {
+    let req = new Request(baseUrl + category, {
       method: "GET",
       headers: h,
       mode: "cors"
@@ -78,10 +72,11 @@ class App extends React.Component {
         //first update cache
         if (this.state.tab) {
           this.toggleTab();
-        }
-        if (category !== this.state.lastCategory) {
+        } else {
           this.updateCache();
         }
+
+        console.log(jsonData.totalResults);
 
         var articleData = [];
         var newRefs = [];
@@ -89,17 +84,19 @@ class App extends React.Component {
           articleData.push(jsonData.articles[i]);
           newRefs.push(React.createRef());
         }
-        console.log("setting lastCategory to " + category);
+        // console.log("setting lastCategory to " + category);
         this.setState({
           articles: articleData,
-          refs: newRefs,
-          lastCategory: category
+          refs: newRefs
+          // lastCategory: category
         });
       })
       .catch(err => {
         console.log("ERROR: ", err.message);
       });
-  }
+
+    // this.setState({ currPage: this.state.currPage + 1 });
+  };
 
   updateRefs = () => {
     //go through current tab and saves refs in
@@ -128,6 +125,14 @@ class App extends React.Component {
     return newCache;
   };
 
+  clearCache = () => {
+    if (this.state.tab) {
+      this.setState({
+        articles: []
+      });
+    }
+  };
+
   toggleTab = () => {
     let newCache = this.state.tab ? this.state.cache : this.updateCache();
     this.setState({
@@ -137,36 +142,65 @@ class App extends React.Component {
     });
   };
 
+  pageDecr = () => {
+    if (this.state.currPage > 1) {
+    }
+  };
+
+  pageIncr = () => {
+    if (this.state.currPage < 10) {
+    }
+  };
+
   render() {
     //App className obsolete
     return (
       <div>
         <div align="center">
           <button
-            className="search"
+            className="categoryBtn"
             onClick={() => this.getNews("entertainment")}
           >
             Entertainment
           </button>
-          <button className="search" onClick={() => this.getNews("sports")}>
+          <button
+            className="categoryBtn"
+            onClick={() => this.getNews("sports")}
+          >
             Sports
           </button>
-          <button className="search" onClick={() => this.getNews("technology")}>
+          <button
+            className="categoryBtn"
+            onClick={() => this.getNews("technology")}
+          >
             Technology
           </button>
         </div>
-        <br />
-        <div align="right">
-          <button className="tab" onClick={this.toggleTab}>
-            {this.state.tab ? "Return to search" : "Saved articles"}
-          </button>
+
+        <div className="controlbar">
+          <div className="prevnext">
+            <button onClick={this.pageDecr}>prev</button>
+            <button onClick={this.pageIncr}>next</button>
+          </div>
+          <div className="searchbar">SEARCH</div>
+          <div className="tab">
+            {this.state.tab ? (
+              <button className="tab" onClick={this.clearCache}>
+                Clear
+              </button>
+            ) : null}
+            <button className="tab" onClick={this.toggleTab}>
+              {this.state.tab ? "Search" : "Saved"}
+            </button>
+          </div>
         </div>
+
         <div className="scrollable">
           <ul>
             {this.state.articles.map((article, i) => (
               <Article
                 info={article}
-                key={article.url}
+                key={this.state.tab + article.url}
                 tab={this.state.tab}
                 ref={this.state.refs[i]}
               />
