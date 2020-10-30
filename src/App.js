@@ -12,7 +12,7 @@ import Article from "./components/Article";
 
 const APIKEY = "78b9d599c4f94f8fa3afb1a5458928d6";
 const PROXY = "https://cors-anywhere.herokuapp.com/";
-const PAGESIZE = 20; //standard articles per page defined by NewsAPI
+const PAGESIZE = 20; //default articles per request defined by NewsAPI
 const key = "&apiKey=f6d3a364faf54888a77e0bab46b8b66c";
 
 class App extends React.Component {
@@ -27,13 +27,13 @@ class App extends React.Component {
       category: "",
       keywords: [],
       US: true,
-      currPage: 1
+      currPage: 1,
+      currKeyword: ""
     };
-    this.currPage = 1;
   }
 
-  composeBaseUrl = () => {
-    return (
+  composeUrl = () => {
+    let url =
       PROXY +
       "https://newsapi.org/v2/top-headlines?" +
       "apiKey=" +
@@ -43,59 +43,65 @@ class App extends React.Component {
       PAGESIZE +
       "&page=" +
       this.state.currPage +
-      "&category="
-    ); //to be added to
+      "&category=" +
+      this.state.category;
+    if (this.state.keywords.length > 0) {
+      url += "&q=";
+      for (let i = 0; i < this.state.keywords.length; i++) {
+        url += this.state.keywords[i];
+      }
+    }
+    return url;
   };
 
-  //takes category as direct input, since set state asynchronous
-  getNews = category => {
-    // if (category !== this.state.lastCategory) {
-    let h = new Headers();
-    h.append("Accept", "application/json");
-    let baseUrl = this.composeBaseUrl();
-    console.log(baseUrl);
-    let req = new Request(baseUrl + category, {
-      method: "GET",
-      headers: h,
-      mode: "cors"
-    });
-
-    fetch(req)
-      .then(response => {
-        if (response.ok) {
-          return response.json();
-        } else {
-          throw new Error("faulty response status " + response.status);
-        }
-      })
-      .then(jsonData => {
-        //first update cache
-        if (this.state.tab) {
-          this.toggleTab();
-        } else {
-          this.updateCache();
-        }
-
-        console.log(jsonData.totalResults);
-
-        var articleData = [];
-        var newRefs = [];
-        for (let i = 0; i < jsonData.articles.length; i++) {
-          articleData.push(jsonData.articles[i]);
-          newRefs.push(React.createRef());
-        }
-        // console.log("setting lastCategory to " + category);
-        this.setState({
-          articles: articleData,
-          refs: newRefs
-          // lastCategory: category
-        });
-      })
-      .catch(err => {
-        console.log("ERROR: ", err.message);
+  //must be used as setState callback, as setState is asynchronous
+  getNews = () => {
+    if (this.state.category !== "") {
+      let h = new Headers();
+      h.append("Accept", "application/json");
+      let reqUrl = this.composeUrl();
+      console.log(reqUrl);
+      let req = new Request(reqUrl, {
+        method: "GET",
+        headers: h,
+        mode: "cors"
       });
 
-    // this.setState({ currPage: this.state.currPage + 1 });
+      fetch(req)
+        .then(response => {
+          if (response.ok) {
+            return response.json();
+          } else {
+            throw new Error("faulty response status " + response.status);
+          }
+        })
+        .then(jsonData => {
+          //first update cache
+          if (this.state.tab) {
+            this.toggleTab();
+          } else {
+            this.updateCache();
+          }
+
+          console.log(jsonData.totalResults);
+
+          var articleData = [];
+          var newRefs = [];
+          for (let i = 0; i < jsonData.articles.length; i++) {
+            articleData.push(jsonData.articles[i]);
+            newRefs.push(React.createRef());
+          }
+          // console.log("setting lastCategory to " + category);
+          this.setState({
+            articles: articleData,
+            refs: newRefs
+            // lastCategory: category
+          });
+        })
+        .catch(err => {
+          console.log("ERROR: ", err.message);
+        });
+    }
   };
 
   updateRefs = () => {
@@ -107,19 +113,22 @@ class App extends React.Component {
     console.log("cache update");
     let newCache = [];
     let seen = new Set();
-    for (let i = 0; i < this.state.refs.length; i++) {
+    let numEntries = 0;
+    for (let i = 0; numEntries < PAGESIZE && i < this.state.refs.length; i++) {
       let article = this.state.refs[i].current;
       if (article.state.cached) {
         newCache.push(article.state.fullData);
         seen.add(article.state.url);
+        numEntries++;
       }
     }
-    for (let i = 0; i < this.state.cache.length; i++) {
+    for (let i = 0; numEntries < PAGESIZE && i < this.state.cache.length; i++) {
       let data = this.state.cache[i];
       if (seen.has(data.url)) {
         console.log("deleted old save entry");
       } else {
         newCache.push(data);
+        numEntries++;
       }
     }
     return newCache;
@@ -142,14 +151,59 @@ class App extends React.Component {
     });
   };
 
+  categoryBtn = cat => {
+    this.setState(
+      {
+        category: cat,
+        currPage: 1,
+        keywords: []
+      },
+      this.getNews
+    );
+  };
+
   pageDecr = () => {
     if (this.state.currPage > 1) {
+      this.setState(
+        {
+          currPage: this.state.currPage - 1
+        },
+        this.getNews
+      );
     }
   };
 
   pageIncr = () => {
-    if (this.state.currPage < 10) {
+    if (this.state.articles.length > 0) {
+      this.setState(
+        {
+          currPage: this.state.currPage + 1
+        },
+        this.getNews
+      );
     }
+  };
+
+  //Form helpers
+  handleChange = event => {
+    this.setState({ currKeyword: event.target.value });
+  };
+
+  handleSubmit = event => {
+    if (this.state.currKeyword !== "") {
+      this.setState(
+        {
+          keywords: [this.state.currKeyword].concat(this.state.keywords),
+          currKeyword: ""
+        },
+        this.getNews
+      );
+    }
+    event.preventDefault();
+  };
+
+  clearKeywords = () => {
+    this.setState({ keywords: [] }, this.getNews);
   };
 
   render() {
@@ -158,20 +212,20 @@ class App extends React.Component {
       <div>
         <div align="center">
           <button
-            className="categoryBtn"
-            onClick={() => this.getNews("entertainment")}
+            className="styled categoryBtn"
+            onClick={() => this.categoryBtn("entertainment")}
           >
             Entertainment
           </button>
           <button
-            className="categoryBtn"
-            onClick={() => this.getNews("sports")}
+            className="styled categoryBtn"
+            onClick={() => this.categoryBtn("sports")}
           >
             Sports
           </button>
           <button
-            className="categoryBtn"
-            onClick={() => this.getNews("technology")}
+            className="styled categoryBtn"
+            onClick={() => this.categoryBtn("technology")}
           >
             Technology
           </button>
@@ -179,18 +233,38 @@ class App extends React.Component {
 
         <div className="controlbar">
           <div className="prevnext">
-            <button onClick={this.pageDecr}>prev</button>
-            <button onClick={this.pageIncr}>next</button>
+            {this.state.tab ? null : (
+              <button onClick={this.pageDecr} className="styled">
+                prev
+              </button>
+            )}
+            {this.state.tab ? null : (
+              <button onClick={this.pageIncr} className="styled">
+                next
+              </button>
+            )}
           </div>
-          <div className="searchbar">SEARCH</div>
+          <div className="searchbar">
+            <form onSubmit={this.handleSubmit}>
+              <input
+                type="text"
+                style={{ marginLeft: 10, marginRight: 10 }}
+                value={this.state.currKeyword}
+                onChange={this.handleChange}
+              ></input>
+              <input type="submit" value="Add keyword"></input>
+              <button onClick={this.clearKeywords}>Clear Filters</button>
+            </form>{" "}
+            {this.state.keywords.toString()} <br />
+          </div>
           <div className="tab">
             {this.state.tab ? (
-              <button className="tab" onClick={this.clearCache}>
+              <button onClick={this.clearCache} className="styled">
                 Clear
               </button>
             ) : null}
-            <button className="tab" onClick={this.toggleTab}>
-              {this.state.tab ? "Search" : "Saved"}
+            <button onClick={this.toggleTab} className="styled">
+              {this.state.tab ? "Search results" : "Saved articles"}
             </button>
           </div>
         </div>

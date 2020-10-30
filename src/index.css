@@ -78,7 +78,7 @@ img {
   margin-right: 15px;
 }
 
-button {
+button.styled {
   transition: 0.2s;
   /* padding: 20px 25px; internal spacing */
   background-color: #2f918f; /* #3aafa9; */ /* #2b7a78; */ /* #3aafa9; */
@@ -91,14 +91,14 @@ button {
   letter-spacing: 2px;
 }
 
-button:hover {
+button.styled:hover {
   transition: 0.2s;
   color: white;
   font-weight: 200;
   border: 2px solid white;
 }
 
-button:active {
+button.styled:active {
   -webkit-transform: scale(0.9);
   -moz-transform: scale(0.9);
   -ms-transform: scale(0.9);
@@ -109,10 +109,6 @@ button:active {
 button.categoryBtn {
   width: 225px;
   margin: 10px auto 0; /*external spacing (between other elements) */
-}
-
-button.tab {
-  width: 100px;
 }
 
 div.controlbar {
