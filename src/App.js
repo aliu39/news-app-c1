@@ -21,14 +21,14 @@ class App extends React.Component {
     this.state = {
       articles: [], //json data
       refs: [],
-      tab: false, //short for "is currently on saved tab"
+      tab: false, //"is currently on saved tab"
       cache: [],
-      cachedRefs: [],
       category: "",
       keywords: [],
       US: true,
       currPage: 1,
-      currKeyword: ""
+      currKeyword: "",
+      totalResults: 0 //total articles from latest request, across ALL pages
     };
   }
 
@@ -84,18 +84,18 @@ class App extends React.Component {
           }
 
           console.log(jsonData.totalResults);
-
-          var articleData = [];
-          var newRefs = [];
+          let total = jsonData.totalResults;
+          let articleData = [];
+          let newRefs = [];
+          //articles.length <= PAGESIZE
           for (let i = 0; i < jsonData.articles.length; i++) {
             articleData.push(jsonData.articles[i]);
             newRefs.push(React.createRef());
           }
-          // console.log("setting lastCategory to " + category);
           this.setState({
             articles: articleData,
-            refs: newRefs
-            // lastCategory: category
+            refs: newRefs,
+            totalResults: total
           });
         })
         .catch(err => {
@@ -174,7 +174,7 @@ class App extends React.Component {
   };
 
   pageIncr = () => {
-    if (this.state.articles.length > 0) {
+    if (this.state.currPage < Math.ceil(this.state.totalResults / PAGESIZE)) {
       this.setState(
         {
           currPage: this.state.currPage + 1
@@ -185,6 +185,7 @@ class App extends React.Component {
   };
 
   //Form helpers
+  //CONTROLLED TEXT
   handleChange = event => {
     this.setState({ currKeyword: event.target.value });
   };
@@ -194,7 +195,8 @@ class App extends React.Component {
       this.setState(
         {
           keywords: [this.state.currKeyword].concat(this.state.keywords),
-          currKeyword: ""
+          currKeyword: "",
+          currPage: 1
         },
         this.getNews
       );
