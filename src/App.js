@@ -28,7 +28,8 @@ class App extends React.Component {
       US: true,
       currPage: 1,
       currKeyword: "",
-      totalResults: 0 //total articles from latest request, across ALL pages
+      totalResults: 0, //total articles from latest request, across ALL pages
+      requests: 0 //num of successful requests made
     };
   }
 
@@ -95,7 +96,8 @@ class App extends React.Component {
           this.setState({
             articles: articleData,
             refs: newRefs,
-            totalResults: total
+            totalResults: total,
+            requests: this.state.requests + 1
           });
         })
         .catch(err => {
@@ -235,12 +237,13 @@ class App extends React.Component {
 
         <div className="controlbar">
           <div className="prevnext">
-            {this.state.tab ? null : (
+            {this.state.tab ? null : this.state.currPage === 1 ? null : (
               <button onClick={this.pageDecr} className="styled">
                 prev
               </button>
             )}
-            {this.state.tab ? null : (
+            {this.state.tab ? null : this.state.currPage >=
+              Math.ceil(this.state.totalResults / PAGESIZE) ? null : (
               <button onClick={this.pageIncr} className="styled">
                 next
               </button>
@@ -272,6 +275,15 @@ class App extends React.Component {
         </div>
 
         <div className="scrollable">
+          {this.state.articles.length === 0 ? (
+            <h2>
+              <b>
+                {this.state.requests === 0
+                  ? "Click a category to begin"
+                  : "No results found"}
+              </b>
+            </h2>
+          ) : null}
           <ul>
             {this.state.articles.map((article, i) => (
               <Article

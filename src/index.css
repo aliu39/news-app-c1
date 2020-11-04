@@ -2,7 +2,7 @@
 @import url(https://fonts.googleapis.com/css?family=Source+Code+Pro:200,300,400,500,600,700,900);
 h1 {
   color: #17252a;
-  font-family: "Source Code Pro";
+  font-family: Georgia; /*"Source Code Pro";*/
   font-weight: 600;
   font-size: 40px;
   text-transform: uppercase;
@@ -13,7 +13,7 @@ h1 {
 }
 h2 {
   color: #17252a;
-  font-family: "Source Code Pro";
+  font-family: Georgia; /*"Source Code Pro";*/
   font-weight: 400;
   font-size: 15px;
   margin-top: 0px;
@@ -23,9 +23,9 @@ h2 {
 
 body {
   margin: 0; /* output margin in Article component styling */
-  background-color: #27d9d0; /*#3aafa9;*/ /* #c0c0c0*/
+  background-color: #3385d6; /*#27d9d0;*/ /*#3aafa9;*/ /* #c0c0c0*/
   color: #17252a;
-  font-family: "Source Code Pro";
+  font-family: Georgia; /*"Source Code Pro";*/
   font-size: 20px;
   position: fixed;
   text-align: center;
@@ -74,21 +74,22 @@ img {
 button.styled {
   transition: 0.2s;
   /* padding: 20px 25px; internal spacing */
-  background-color: #2f918f; /* #3aafa9; */ /* #2b7a78; */ /* #3aafa9; */
+  background-color: white; /*#2f918f;*/ /* #3aafa9; */ /* #2b7a78; */ /* #3aafa9; */
   color: #17252a;
   font-size: 20px;
   text-align: center;
   border: 2px solid #17252a;
   border-radius: 5%;
+  font-family: Georgia;
   /* text-transform: uppercase; */
   letter-spacing: 2px;
 }
 
 button.styled:hover {
   transition: 0.2s;
-  color: white;
+  color: #0066cc;
   font-weight: 200;
-  border: 2px solid white;
+  border: 2px #0066cc;
 }
 
 button.styled:active {
