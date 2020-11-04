@@ -31,6 +31,7 @@ class App extends React.Component {
       totalResults: 0, //total articles from latest request, across ALL pages
       requests: 0 //num of successful requests made
     };
+    this.scrollRef = React.createRef();
   }
 
   composeUrl = () => {
@@ -93,22 +94,20 @@ class App extends React.Component {
             articleData.push(jsonData.articles[i]);
             newRefs.push(React.createRef());
           }
-          this.setState({
-            articles: articleData,
-            refs: newRefs,
-            totalResults: total,
-            requests: this.state.requests + 1
-          });
+          this.setState(
+            {
+              articles: articleData,
+              refs: newRefs,
+              totalResults: total,
+              requests: this.state.requests + 1
+            },
+            () => (this.scrollRef.current.scrollTop = 0) //reset scrollable div
+          );
         })
         .catch(err => {
           console.log("ERROR: ", err.message);
         });
     }
-  };
-
-  updateRefs = () => {
-    //go through current tab and saves refs in
-    //requires: called only in current tab
   };
 
   updateCache = () => {
@@ -274,7 +273,7 @@ class App extends React.Component {
           </div>
         </div>
 
-        <div className="scrollable">
+        <div className="scrollable" ref={this.scrollRef}>
           {this.state.articles.length === 0 ? (
             <h2>
               <b>
