@@ -297,6 +297,8 @@ class App extends React.Component {
               <b>
                 {this.state.requests === 0
                   ? "Click a category to begin"
+                  : this.state.tab
+                  ? "No saved articles"
                   : "No results found"}
               </b>
             </h2>
@@ -306,7 +308,7 @@ class App extends React.Component {
               /* store reference to */
               <Article
                 info={article}
-                key={this.state.tab + article.url}
+                key={this.state.tab + i + article.url}
                 tab={this.state.tab}
                 ref={this.state.refs[i]}
               />
