@@ -1,39 +1,32 @@
 import React from "react";
-// import "./App.css";
 import Article from "./components/Article";
-
-/* GET NEWS FROM API CODE */
-
-// NETLIFY to deploy site
-// or github.io
-
-// consideration: keep country as US or go international?
-// consider whether cors available after deploying site
 
 const APIKEY = "78b9d599c4f94f8fa3afb1a5458928d6";
 const PROXY = "https://cors-anywhere.herokuapp.com/";
 const PAGESIZE = 20; //default articles per request defined by NewsAPI
-const key = "&apiKey=f6d3a364faf54888a77e0bab46b8b66c";
+//const key2 = "&apiKey=f6d3a364faf54888a77e0bab46b8b66c"; //free developer key
 
+/* Root component. Contains most of site's functionality */
 class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      articles: [], //json data
-      refs: [],
+      articles: [], //data as json objects
+      refs: [], //refs to children, used to check if cache should update
       tab: false, //"is currently on saved tab"
-      cache: [],
+      cache: [], //json data of currently hidden tab
       category: "",
       keywords: [],
       US: true,
       currPage: 1,
-      currKeyword: "",
-      totalResults: 0, //total articles from latest request, across ALL pages
-      requests: 0 //num of successful requests made
+      currKeyword: "", //used for form element / controlled text
+      totalResults: 0, //article count from last request, across ALL pages
+      requests: 0 //# successful requests made so far
     };
-    this.scrollRef = React.createRef();
+    this.scrollRef = React.createRef(); //ref to scrollable div element
   }
 
+  // compose request url from state
   composeUrl = () => {
     let url =
       PROXY +
@@ -56,13 +49,15 @@ class App extends React.Component {
     return url;
   };
 
-  //must be used as setState callback, as setState is asynchronous
+  // uses curr. state search params to make new request and store new data
+  /* if App state is changed immediately before this is called, getNews must be 
+     used as a setState callback, as setState is asynchronous */
   getNews = () => {
+    //avoid null category request
     if (this.state.category !== "") {
       let h = new Headers();
       h.append("Accept", "application/json");
       let reqUrl = this.composeUrl();
-      console.log(reqUrl);
       let req = new Request(reqUrl, {
         method: "GET",
         headers: h,
@@ -78,18 +73,18 @@ class App extends React.Component {
           }
         })
         .then(jsonData => {
-          //first update cache
+          // first update cache
           if (this.state.tab) {
             this.toggleTab();
           } else {
             this.updateCache();
           }
 
-          console.log(jsonData.totalResults);
-          let total = jsonData.totalResults;
+          // create new refs and store along with new data
+          let totalCount = jsonData.totalResults;
           let articleData = [];
           let newRefs = [];
-          //articles.length <= PAGESIZE
+          //note: articles.length <= PAGESIZE
           for (let i = 0; i < jsonData.articles.length; i++) {
             articleData.push(jsonData.articles[i]);
             newRefs.push(React.createRef());
@@ -98,7 +93,7 @@ class App extends React.Component {
             {
               articles: articleData,
               refs: newRefs,
-              totalResults: total,
+              totalResults: totalCount,
               requests: this.state.requests + 1
             },
             () => (this.scrollRef.current.scrollTop = 0) //reset scrollable div
@@ -110,11 +105,13 @@ class App extends React.Component {
     }
   };
 
+  // iterate through current article refs, cache ones with state.cached = true
+  // lazily called before changing tab or making a new request
   updateCache = () => {
-    console.log("cache update");
     let newCache = [];
     let seen = new Set();
     let numEntries = 0;
+    // new entries
     for (let i = 0; numEntries < PAGESIZE && i < this.state.refs.length; i++) {
       let article = this.state.refs[i].current;
       if (article.state.cached) {
@@ -123,10 +120,12 @@ class App extends React.Component {
         numEntries++;
       }
     }
+    // old entries
     for (let i = 0; numEntries < PAGESIZE && i < this.state.cache.length; i++) {
       let data = this.state.cache[i];
       if (seen.has(data.url)) {
-        console.log("deleted old save entry");
+        // avoid duplicates
+        // console.log("deleted old save entry");
       } else {
         newCache.push(data);
         numEntries++;
@@ -143,6 +142,7 @@ class App extends React.Component {
     }
   };
 
+  // change between saved article and search results tab
   toggleTab = () => {
     let newCache = this.state.tab ? this.state.cache : this.updateCache();
     this.setState({
@@ -152,6 +152,7 @@ class App extends React.Component {
     });
   };
 
+  // search button functions
   categoryBtn = cat => {
     this.setState(
       {
@@ -185,8 +186,16 @@ class App extends React.Component {
     }
   };
 
-  //Form helpers
-  //CONTROLLED TEXT
+  toggleCountry = () => {
+    this.setState(
+      {
+        US: !this.state.US
+      },
+      this.getNews
+    );
+  };
+
+  // Form fxs (integrates HTML form w/React state, using controlled text)
   handleChange = event => {
     this.setState({ currKeyword: event.target.value });
   };
@@ -210,9 +219,9 @@ class App extends React.Component {
   };
 
   render() {
-    //App className obsolete
     return (
       <div>
+        {/* Main category buttons */}
         <div align="center">
           <button
             className="styled categoryBtn"
@@ -235,6 +244,7 @@ class App extends React.Component {
         </div>
 
         <div className="controlbar">
+          {/* previous/next page buttons */}
           <div className="prevnext">
             {this.state.tab ? null : this.state.currPage === 1 ? null : (
               <button onClick={this.pageDecr} className="styled">
@@ -248,6 +258,8 @@ class App extends React.Component {
               </button>
             )}
           </div>
+
+          {/* keyword form + country filter */}
           <div className="searchbar">
             <form onSubmit={this.handleSubmit}>
               <input
@@ -258,9 +270,14 @@ class App extends React.Component {
               ></input>
               <input type="submit" value="Add keyword"></input>
               <button onClick={this.clearKeywords}>Clear Filters</button>
-            </form>{" "}
+              <button onClick={this.toggleCountry}>
+                {this.state.US ? "Intl." : "U.S."}
+              </button>
+            </form>
             {this.state.keywords.toString()} <br />
           </div>
+
+          {/* toggle tab + clear cache buttons */}
           <div className="tab">
             {this.state.tab ? (
               <button onClick={this.clearCache} className="styled">
@@ -273,6 +290,7 @@ class App extends React.Component {
           </div>
         </div>
 
+        {/* articles (output div) */}
         <div className="scrollable" ref={this.scrollRef}>
           {this.state.articles.length === 0 ? (
             <h2>
@@ -285,6 +303,7 @@ class App extends React.Component {
           ) : null}
           <ul>
             {this.state.articles.map((article, i) => (
+              /* store reference to */
               <Article
                 info={article}
                 key={this.state.tab + article.url}
