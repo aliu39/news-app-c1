@@ -16,10 +16,10 @@ class App extends React.Component {
       tab: false, //"is currently on saved tab"
       cache: [], //json data of currently hidden tab
       category: "",
-      keywords: [],
+      keyword: "",
       US: true,
       currPage: 1,
-      currKeyword: "", //used for form element / controlled text
+      formValue: "", //used for form element / controlled text
       totalResults: 0, //article count from last request, across ALL pages
       requests: 0 //# successful requests made so far
     };
@@ -40,11 +40,9 @@ class App extends React.Component {
       this.state.currPage +
       "&category=" +
       this.state.category;
-    if (this.state.keywords.length > 0) {
-      url += "&q=";
-      for (let i = 0; i < this.state.keywords.length; i++) {
-        url += this.state.keywords[i];
-      }
+    if (this.state.keyword !== "") {
+      url += "&q=" + this.state.keyword;
+      console.log(url);
     }
     return url;
   };
@@ -158,7 +156,7 @@ class App extends React.Component {
       {
         category: cat,
         currPage: 1,
-        keywords: []
+        keyword: ""
       },
       this.getNews
     );
@@ -197,15 +195,15 @@ class App extends React.Component {
 
   // Form fxs (integrates HTML form w/React state, using controlled text)
   handleChange = event => {
-    this.setState({ currKeyword: event.target.value });
+    this.setState({ formValue: event.target.value });
   };
 
   handleSubmit = event => {
-    if (this.state.currKeyword !== "") {
+    if (this.state.formValue !== "") {
       this.setState(
         {
-          keywords: [this.state.currKeyword].concat(this.state.keywords),
-          currKeyword: "",
+          keyword: this.state.formValue,
+          formValue: "",
           currPage: 1
         },
         this.getNews
@@ -214,8 +212,8 @@ class App extends React.Component {
     event.preventDefault();
   };
 
-  clearKeywords = () => {
-    this.setState({ keywords: [] }, this.getNews);
+  clearKeyword = () => {
+    this.setState({ keyword: "" }, this.getNews);
   };
 
   render() {
@@ -265,16 +263,16 @@ class App extends React.Component {
               <input
                 type="text"
                 style={{ marginLeft: 10, marginRight: 10 }}
-                value={this.state.currKeyword}
+                value={this.state.formValue}
                 onChange={this.handleChange}
               ></input>
               <input type="submit" value="Add keyword"></input>
-              <button onClick={this.clearKeywords}>Clear Filters</button>
+              <button onClick={this.clearKeyword}>Clear Filters</button>
               <button onClick={this.toggleCountry}>
                 {this.state.US ? "Intl." : "U.S."}
               </button>
             </form>
-            {this.state.keywords.toString()} <br />
+            {this.state.keyword} <br />
           </div>
 
           {/* toggle tab + clear cache buttons */}
