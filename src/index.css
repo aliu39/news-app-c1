@@ -86,7 +86,6 @@ button.categoryBtn {
   overflow-x: hidden;
   overflow-y: auto;
   height: 85vh;
-  border-top: 10px white;
 }
 
 .article {
@@ -94,9 +93,17 @@ button.categoryBtn {
   border: 1px solid black;
   text-align: left;
   padding: 20px;
-  display: inline-block;
-  width: 90vw;
+  /* display: inline-block; */
+  width: 91vw;
+  display: flex;
+  flex-direction: row;
   background: white;
+}
+.article-image {
+  width: 440px;
+}
+.article-content {
+  width: calc(90vw - 440px);
 }
 .article:hover {
   transition: 0.2s;
@@ -110,9 +117,7 @@ button.categoryBtn {
 
 img {
   border-radius: 10%;
-  float: left;
   width: 400px;
-  margin-right: 20px;
 }
 
 p {

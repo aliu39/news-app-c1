@@ -42,7 +42,6 @@ class App extends React.Component {
       this.state.category;
     if (this.state.keyword !== "") {
       url += "&q=" + this.state.keyword;
-      console.log(url);
     }
     return url;
   };
@@ -74,9 +73,8 @@ class App extends React.Component {
           // first update cache
           if (this.state.tab) {
             this.toggleTab();
-          } else {
-            this.updateCache();
           }
+          let newCache = this.updateCache();
 
           // create new refs and store along with new data
           let totalCount = jsonData.totalResults;
@@ -92,7 +90,8 @@ class App extends React.Component {
               articles: articleData,
               refs: newRefs,
               totalResults: totalCount,
-              requests: this.state.requests + 1
+              requests: this.state.requests + 1,
+              cache: newCache
             },
             () => (this.scrollRef.current.scrollTop = 0) //reset scrollable div
           );
@@ -106,30 +105,42 @@ class App extends React.Component {
   // iterate through current article refs, cache ones with state.cached = true
   // lazily called before changing tab or making a new request
   updateCache = () => {
-    let newCache = [];
-    let seen = new Set();
-    let numEntries = 0;
-    // new entries
-    for (let i = 0; numEntries < PAGESIZE && i < this.state.refs.length; i++) {
-      let article = this.state.refs[i].current;
-      if (article.state.cached) {
-        newCache.push(article.state.fullData);
-        seen.add(article.state.url);
-        numEntries++;
+    if (this.state.tab) {
+      return this.state.cache;
+    } else {
+      let newCache = [];
+      let seen = new Set();
+      let numEntries = 0;
+      // new entries
+      for (
+        let i = 0;
+        numEntries < PAGESIZE && i < this.state.refs.length;
+        i++
+      ) {
+        let article = this.state.refs[i].current;
+        if (article.state.cached) {
+          newCache.push(article.state.fullData);
+          seen.add(article.state.url);
+          numEntries++;
+        }
       }
-    }
-    // old entries
-    for (let i = 0; numEntries < PAGESIZE && i < this.state.cache.length; i++) {
-      let data = this.state.cache[i];
-      if (seen.has(data.url)) {
-        // avoid duplicates
-        // console.log("deleted old save entry");
-      } else {
-        newCache.push(data);
-        numEntries++;
+      // old entries
+      for (
+        let i = 0;
+        numEntries < PAGESIZE && i < this.state.cache.length;
+        i++
+      ) {
+        let data = this.state.cache[i];
+        if (seen.has(data.url)) {
+          // avoid duplicates
+          // console.log("deleted old save entry");
+        } else {
+          newCache.push(data);
+          numEntries++;
+        }
       }
+      return newCache;
     }
-    return newCache;
   };
 
   clearCache = () => {
@@ -142,7 +153,7 @@ class App extends React.Component {
 
   // change between saved article and search results tab
   toggleTab = () => {
-    let newCache = this.state.tab ? this.state.cache : this.updateCache();
+    let newCache = this.updateCache();
     this.setState({
       articles: newCache,
       tab: !this.state.tab,

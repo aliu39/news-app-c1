@@ -57,21 +57,25 @@ export default class Article extends React.Component {
   render() {
     return (
       <div className="article">
-        <img src={this.state.img_src != null ? this.state.img_src : img_na} alt="failed to load"></img>
-        <p>
-          <b>{this.state.title + " | " + this.state.source + " | " + this.state.date}</b> <br/>
-          {this.state.description} <br/>
-        </p>
-        <p>
-          {this.state.content}
-        </p>
-        <p align="right">
-          <a href={this.state.url} target="_blank" rel="noreferrer">
-            original article</a> <br />
-          {this.state.tab ? null :
-            <button onClick={this.saveArticle}>save</button>
-          }
-        </p>
+        <div className="article-image">
+          <img src={this.state.img_src != null ? this.state.img_src : img_na} alt="failed to load"></img>
+        </div>
+        <div className="article-content">
+          <p>
+            <b>{this.state.title + " | " + this.state.source + " | " + this.state.date}</b> <br/>
+            {this.state.description} <br/>
+          </p>
+          <p>
+            {this.state.content}
+          </p>
+          <p align="right">
+            <a href={this.state.url} target="_blank" rel="noreferrer">
+              original article</a> <br />
+            {this.state.tab ? null :
+              <button onClick={this.saveArticle}>save</button>
+            }
+          </p>
+        </div>
       </div>
     );
   }
